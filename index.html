@@ -122,6 +122,12 @@
       font-size: 16px;
       margin-top: 20px;
     }
+    .loading {
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+      font-weight: bold;
+    }
     footer {
       background-color: #153345;
       color: white;
@@ -147,7 +153,7 @@
   <div class="container">
     <div class="chatbot-container">
       <h1>Welcome to the Weather ChatBot</h1>
-      <p class="info-text">Ask your question and get the weather details for your city instantly!</p>
+      <p class="info-text">Ask any question, get an answer based on the weather, and receive weather details instantly</p>
       
       <form id="chatForm">
         <div class="input-group">
@@ -161,6 +167,11 @@
         <button type="submit">Get Answer</button>
       </form>
 
+      <!-- Loading Indicator -->
+      <div id="loading" class="loading" style="display: none;">
+        Loading...
+      </div>
+
       <div id="result" class="result" style="display: none;">
         <h3>Bot's Response:</h3>
         <p id="botReply"></p>
@@ -173,7 +184,7 @@
   </div>
 
   <footer>
-    <p>&copy; 2025 WeatherBot | <a href="#privacy">Privacy Policy</a></p>
+    <p>&copy; 2025 ClimaBot | <a href="#privacy">Privacy Policy</a></p>
   </footer>
 
   <script>
@@ -183,11 +194,15 @@
       const inputPrompt = document.getElementById('inputPrompt').value;
       const city = document.getElementById('city').value;
 
+      
       document.getElementById('result').style.display = 'none';
       document.getElementById('error').style.display = 'none';
 
+ 
+      document.getElementById('loading').style.display = 'block';
+  
       try {
-        const response = await fetch('http://localhost:3000/ask', {
+        const response = await fetch('https://climabot.onrender.com/ask', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -196,6 +211,9 @@
         });
 
         const data = await response.json();
+
+        // Hide loading indicator
+        document.getElementById('loading').style.display = 'none';
 
         if (data.error) {
           throw new Error(data.error);
@@ -208,6 +226,7 @@
         
       } catch (error) {
         console.error(error);
+        document.getElementById('loading').style.display = 'none';
         document.getElementById('error').textContent = "Error: " + error.message;
         document.getElementById('error').style.display = 'block';
       }
