@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather ChatBot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f4f8;
+      color: #333;
+    }
+    h1, h3 {
+      margin: 0;
+      padding: 0;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    nav {
+      background-color: #153345;
+      padding: 15px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-radius: 0 0 8px 8px;
+    }
+    nav .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    nav .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+    nav .nav-links a {
+      color: white;
+      font-size: 18px;
+      transition: color 0.3s;
+    }
+    nav .nav-links a:hover {
+      color: #f0f0f0;
+    }
+    .chatbot-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .chatbot-container h1 {
+      text-align: center;
+      color: #333;
+    }
+    .info-text {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #555;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 16px;
+      font-weight: 500;
+      color: #555;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      margin-top: 8px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      background-color: #153345;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #435865;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .result h3 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    .result p {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.5;
+    }
+    .error {
+      color: red;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    footer {
+      background-color: #153345;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      border-radius: 8px 8px 0 0;
+    }
+    footer a {
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">ClimaBot</div>
+    <div class="nav-links"></div>
+  </nav>
+
+  <div class="container">
+    <div class="chatbot-container">
+      <h1>Welcome to the Weather ChatBot</h1>
+      <p class="info-text">Ask your question and get the weather details for your city instantly!</p>
+      
+      <form id="chatForm">
+        <div class="input-group">
+          <label for="inputPrompt">Your Question</label>
+          <input type="text" id="inputPrompt" placeholder="Ask something..." required />
+        </div>
+        <div class="input-group">
+          <label for="city">Enter City</label>
+          <input type="text" id="city" placeholder="e.g., Paris" required />
+        </div>
+        <button type="submit">Get Answer</button>
+      </form>
+
+      <div id="result" class="result" style="display: none;">
+        <h3>Bot's Response:</h3>
+        <p id="botReply"></p>
+        <h3>Weather Details:</h3>
+        <p id="weatherDetails"></p>
+      </div>
+
+      <div id="error" class="error" style="display: none;"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 WeatherBot | <a href="#privacy">Privacy Policy</a></p>
+  </footer>
+
+  <script>
+    document.getElementById('chatForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const inputPrompt = document.getElementById('inputPrompt').value;
+      const city = document.getElementById('city').value;
+
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('error').style.display = 'none';
+
+      try {
+        const response = await fetch('http://localhost:3000/ask', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ input: inputPrompt, city: city })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        document.getElementById('botReply').textContent = data.botReply;
+        document.getElementById('weatherDetails').textContent = `City: ${data.weatherData.city}, Temperature: ${data.weatherData.temperature}, Weather: ${data.weatherData.description}, Feels like: ${data.weatherData.feels_like}`;
+
+        document.getElementById('result').style.display = 'block';
+        
+      } catch (error) {
+        console.error(error);
+        document.getElementById('error').textContent = "Error: " + error.message;
+        document.getElementById('error').style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
